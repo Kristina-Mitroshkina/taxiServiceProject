@@ -40,6 +40,10 @@ public class CommandContainer {
 		commands.put("listFilteredByDatesOrders", new ListFilteredOrdersByDateCommand());
 		commands.put("listCategories", new ListSortedCategoriesCommand());
 
+		//driver commands
+		commands.put("newOrders", new ListNewOrdersDriverCommand());
+		commands.put("driverConfirmOrder", new DriverConfirmOrderCommand());
+
 		log.debug("Command container was successfully initialized");
 		log.trace("Number of commands --> " + commands.size());
 	}

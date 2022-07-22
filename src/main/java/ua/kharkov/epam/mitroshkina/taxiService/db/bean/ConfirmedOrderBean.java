@@ -18,7 +18,7 @@ public class ConfirmedOrderBean {
     private int discount_cost;
     private String order_date;
     private String status;
-
+    private int timeToWait;
 
     public int getConfirmedOrder_id() {
         return this.confirmedOrder_id;
@@ -80,6 +80,10 @@ public class ConfirmedOrderBean {
 
     public String getStatus() {
         return this.status;
+    }
+
+    public int getTimeToWait() {
+        return timeToWait;
     }
 
     public void setConfirmedOrder_id(int confirmedOrder_id) {
@@ -148,6 +152,10 @@ public class ConfirmedOrderBean {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setTimeToWait(int timeToWait) {
+        this.timeToWait = timeToWait;
     }
 
     @Override

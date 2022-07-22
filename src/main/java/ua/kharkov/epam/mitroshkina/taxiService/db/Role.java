@@ -7,7 +7,7 @@ import ua.kharkov.epam.mitroshkina.taxiService.db.entity.User;
  */
 
 public enum Role {
-	ADMIN, CLIENT;
+	ADMIN, CLIENT, DRIVER;
 	
 	public static Role getRole(User user) {
 		int roleId = user.getRole_id();

@@ -17,8 +17,11 @@ public final class Path {
 	public static final String PAGE__NO_SUITABLE_CAR = "/WEB-INF/jsp/client/noSuitableCars.jsp";
 	public static final String PAGE__MY_ORDERS = "/WEB-INF/jsp/client/myOrders.jsp";
 	public static final String PAGE__VIEW_MY_ORDERS = "/WEB-INF/jsp/client/viewMyOrders.jsp";
+	public static final String PAGE__LIST_NEW_ORDERS = "/WEB-INF/jsp/driver/list_newOrders.jsp";
+	public static final String PAGE__CLIENT_IS_WAITING = "/WEB-INF/jsp/driver/clientIsWaiting.jsp";
 
 	// commands
 	public static final String COMMAND__NEW_CLIENT_ORDER = "/controller?command=viewAddCO";
 	public static final String COMMAND__LIST_CLIENTS = "/controller?command=listClients";
+	public static final String COMMAND__NEW_DRIVER_ORDER = "/controller?command=newOrders";
 }

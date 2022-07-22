@@ -68,6 +68,9 @@ public class LoginCommand extends Command {
 			if (userRole == Role.CLIENT)
 				forward = Path.COMMAND__NEW_CLIENT_ORDER;
 
+			if (userRole == Role.DRIVER)
+				forward = Path.COMMAND__NEW_DRIVER_ORDER;
+
 			session.setAttribute("user", user);
 			log.trace("Set the session attribute: user --> " + user);
 

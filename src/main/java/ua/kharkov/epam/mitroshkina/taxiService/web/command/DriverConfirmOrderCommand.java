@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public class ConfirmOrderCommand extends Command {
+public class DriverConfirmOrderCommand extends Command{
     private static final long serialVersionUID = 1656156165557020610L;
 
     private static final Logger log = Logger.getLogger(ConfirmOrderCommand.class);
@@ -21,18 +21,13 @@ public class ConfirmOrderCommand extends Command {
 
         log.debug("Command starts");
 
-        int clientOrder_id = Integer.parseInt(request.getParameter("clientOrder_id"));
-        String status = new ClientOrderDao().checkOrderStatus(clientOrder_id);
-        if(!status.equals("confirmed"))
-        new ClientOrderDao().updateOrderStatus(clientOrder_id);
+        int confirmedOrder_id = Integer.parseInt(request.getParameter("confirmedOrder_id"));
+        new ClientOrderDao().updateConfirmOrderStatus(confirmedOrder_id);
         int time = new ClientOrderDao().timeToWait();
         request.setAttribute("time", time);
-        request.setAttribute("clientOrder_id", clientOrder_id);
-        request.setAttribute("status", status);
 
         log.debug("Command finished");
-        return Path.PAGE__FINISH_ORDER;
+        return Path.PAGE__CLIENT_IS_WAITING;
 
     }
-
 }

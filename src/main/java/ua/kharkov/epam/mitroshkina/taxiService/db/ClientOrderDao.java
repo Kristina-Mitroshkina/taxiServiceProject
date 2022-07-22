@@ -28,7 +28,8 @@ public class ClientOrderDao {
     private final static String GET_CONFIRMED_ORDER = "SELECT cono.clientOrder_id, dep.str_name, des.str_name, clo.passengers_number, ca.category_name, d.brand, d.model, c.car_number, dr.dr_name, dr.dr_surname, cono.cost, cono.discount_cost\n" +
             "FROM addresses dep, addresses des, clientOrder clo, car_category ca, car_description d, cars c, drivers dr, confirmedOrder cono\n" +
             "WHERE cono.clientOrder_id = clo.id AND clo.car_category = ca.category_id AND dep.address_id = clo.departure_address AND des.address_id = clo.destination_address AND cono.car_id = c.car_id AND c.car_description_id = d.car_description_id AND c.driver_id = dr.driver_id AND cono.confirmedOrder_id = ?";
-    private final static String UPDATE_ORDER_STATUS = "UPDATE confirmedOrder SET status = 'confirmed' WHERE clientOrder_id = ?";
+    private final static String UPDATE_ORDER_STATUS = "UPDATE confirmedOrder SET status = 'awaiting' WHERE clientOrder_id = ?";
+    private final static String CHECK_ORDER_STATUS = "SELECT status FROM confirmedOrder WHERE clientOrder_id = ?";
     private final static String GET_ALL_ORDERS= "SELECT cono.confirmedOrder_id, clo.user_id, dep.str_name, des.str_name, clo.passengers_number, c.car_id, cono.cost, cono.discount_cost, clo.order_date, cono.status\n" +
             "FROM addresses dep, addresses des, clientOrder clo, car_category ca, car_description d, cars c, confirmedOrder cono\n" +
             "WHERE cono.clientOrder_id = clo.id AND clo.car_category = ca.category_id AND dep.address_id = clo.departure_address AND des.address_id = clo.destination_address AND cono.car_id = c.car_id AND c.car_description_id = d.car_description_id";
@@ -50,6 +51,10 @@ public class ClientOrderDao {
     private final static String GET_ORDERS_BY_USER = "SELECT cono.clientOrder_id, dep.str_name, des.str_name, clo.passengers_number, ca.category_name, d.brand, d.model, c.car_number, dr.dr_name, dr.dr_surname, cono.cost, cono.discount_cost, clo.order_date, cono.status\n" +
             "FROM addresses dep, addresses des, clientOrder clo, car_category ca, car_description d, cars c, drivers dr, confirmedOrder cono\n" +
             "WHERE cono.clientOrder_id = clo.id AND clo.car_category = ca.category_id AND dep.address_id = clo.departure_address AND des.address_id = clo.destination_address AND cono.car_id = c.car_id AND c.car_description_id = d.car_description_id AND c.driver_id = dr.driver_id AND clo.user_id = ?";
+    private final static String GET_NEW_ORDERS_DRIVER = "SELECT cono.confirmedOrder_id, clo.user_id, dep.str_name, des.str_name, clo.passengers_number, clo.order_date, cono.status\n" +
+            "FROM addresses dep, addresses des, clientOrder clo, confirmedOrder cono\n" +
+            "WHERE cono.clientOrder_id = clo.id AND dep.address_id = clo.departure_address AND des.address_id = clo.destination_address AND cono.status = 'awaiting'";
+    private final static String UPDATE_CONFIRM_ORDER_STATUS = "UPDATE confirmedOrder SET status = 'confirmed' WHERE confirmedOrder_id = ?";
 
 
     private Connection getConnection() throws SQLException {
@@ -235,6 +240,30 @@ public class ClientOrderDao {
         return cob;
     }
 
+    public String checkOrderStatus(int clientOrder_id) throws SQLException {
+        String status = "";
+        Connection conn=null;
+        PreparedStatement prst=null;
+        ResultSet rs=null;
+        try {
+            conn = getConnection();
+            prst = conn.prepareStatement(CHECK_ORDER_STATUS);
+            prst.setInt(1, clientOrder_id);
+            rs = prst.executeQuery();
+            if (rs.next()) {
+                status = rs.getString(1);
+            }
+            return status;
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw e;
+        }finally {
+            close(rs);
+            close(prst);
+            close(conn);
+        }
+    }
+
     public boolean updateOrderStatus(int clientOrder_id) throws SQLException {
         boolean result=false;
         Connection conn=null;
@@ -254,6 +283,27 @@ public class ClientOrderDao {
         }
         return result;
     }
+
+    public boolean updateConfirmOrderStatus(int confirmedOrder_id) throws SQLException {
+        boolean result=false;
+        Connection conn=null;
+        PreparedStatement prst=null;
+        try {
+            conn = getConnection();
+            prst=conn.prepareStatement(UPDATE_CONFIRM_ORDER_STATUS);
+            int k=1;
+            prst.setInt(k,confirmedOrder_id);
+            result=prst.executeUpdate()>0;
+        }catch (SQLException e){
+            e.printStackTrace();
+            throw e;
+        }finally {
+            close(prst);
+            close(conn);
+        }
+        return result;
+    }
+
 
     public int timeToWait(){
         int time = (int)(Math.random()*10+3);
@@ -442,6 +492,43 @@ public class ClientOrderDao {
             close(con);
         }
         return list;
+    }
+
+    public List<ConfirmedOrderBean> getNewOrderForDriverBeans() throws SQLException {
+        try (Connection conn = getConnection()) {
+            return getNewOrderForDriverBeans(conn);
+        } catch (SQLException e) {
+            System.err.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    private List<ConfirmedOrderBean> getNewOrderForDriverBeans(Connection conn) throws SQLException {
+        try (PreparedStatement ps = conn.prepareStatement(GET_NEW_ORDERS_DRIVER);
+             ResultSet rs = ps.executeQuery()) {
+            List<ConfirmedOrderBean> list = new LinkedList<>();
+            while (rs.next()) {
+                ConfirmedOrderBean bean = getConfirmedOrderBeanValueForDriver(rs);
+                list.add(bean);
+            }
+            return list;
+        }
+    }
+
+    private ConfirmedOrderBean getConfirmedOrderBeanValueForDriver(ResultSet rs) throws SQLException{
+        try {
+            ConfirmedOrderBean cob = new ConfirmedOrderBean();
+            cob.setConfirmedOrder_id(rs.getInt("confirmedOrder_id"));
+            cob.setUser_id(rs.getInt("user_id"));
+            cob.setDeparture_address(rs.getString("dep.str_name"));
+            cob.setDestination_address(rs.getString("des.str_name"));
+            cob.setPassengers_number(rs.getInt("passengers_number"));
+            cob.setOrder_date(rs.getString("order_date"));
+            cob.setStatus(rs.getString("status"));
+            return cob;
+        } catch (SQLException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     private ConfirmedOrderBean getConfirmedOrderBeanValueForAdmin(ResultSet rs) throws SQLException{
